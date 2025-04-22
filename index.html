@@ -1,167 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pong Game</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #000;
-        }
-        canvas {
-            border: 2px solid #fff;
-        }
-    </style>
+    <title>Encuesta Moderna</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <canvas id="pongCanvas" width="800" height="400"></canvas>
-    <script>
-        const canvas = document.getElementById('pongCanvas');
-        const ctx = canvas.getContext('2d');
+    <div class="survey-container">
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+        <div class="survey-content">
+            <h1 class="survey-title">Encuesta</h1>
+            <div class="question-container">
+                <!-- Las preguntas se cargarán dinámicamente -->
+            </div>
+            <div class="nav-buttons">
+                <button id="prev-btn" class="nav-btn" disabled>Anterior</button>
+                <button id="next-btn" class="nav-btn">Siguiente</button>
+                <button id="submit-btn" class="nav-btn submit-btn">Enviar</button>
+            </div>
+        </div>
+        <div class="thank-you-message">
+            <h2>¡Gracias por participar!</h2>
+            <p>Tus respuestas han sido registradas.</p>
+        </div>
+    </div>
 
-        // Game objects
-        const ball = {
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            radius: 10,
-            speedX: 7,
-            speedY: 7
-        };
-
-        const paddle1 = {
-            x: 10,
-            y: canvas.height / 2 - 50,
-            width: 10,
-            height: 100,
-            speed: 8,
-            score: 0
-        };
-
-        const paddle2 = {
-            x: canvas.width - 20,
-            y: canvas.height / 2 - 50,
-            width: 10,
-            height: 100,
-            speed: 8,
-            score: 0
-        };
-
-        // Key states
-        const keys = {
-            w: false,
-            s: false,
-            ArrowUp: false,
-            ArrowDown: false
-        };
-
-        // Event listeners for paddle movement
-        document.addEventListener('keydown', (e) => {
-            if (e.key in keys) keys[e.key] = true;
-        });
-
-        document.addEventListener('keyup', (e) => {
-            if (e.key in keys) keys[e.key] = false;
-        });
-
-        // Move paddles
-        function movePaddles() {
-            if (keys.w && paddle1.y > 0) paddle1.y -= paddle1.speed;
-            if (keys.s && paddle1.y < canvas.height - paddle1.height) paddle1.y += paddle1.speed;
-            // Uncomment for two-player mode
-            // if (keys.ArrowUp && paddle2.y > 0) paddle2.y -= paddle2.speed;
-            // if (keys.ArrowDown && paddle2.y < canvas.height - paddle2.height) paddle2.y += paddle2.speed;
-
-            // AI for paddle2 (comment out for two-player mode)
-            const paddle2Center = paddle2.y + paddle2.height / 2;
-            if (paddle2Center < ball.y - 35) paddle2.y += paddle2.speed;
-            if (paddle2Center > ball.y + 35) paddle2.y -= paddle2.speed;
-        }
-
-        // Move ball
-        function moveBall() {
-            ball.x += ball.speedX;
-            ball.y += ball.speedY;
-
-            // Top and bottom wall collision
-            if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
-                ball.speedY = -ball.speedY;
-            }
-
-            // Paddle collision
-            if (
-                (ball.x - ball.radius < paddle1.x + paddle1.width &&
-                 ball.y > paddle1.y && ball.y < paddle1.y + paddle1.height) ||
-                (ball.x + ball.radius > paddle2.x &&
-                 ball.y > paddle2.y && ball.y < paddle2.y + paddle2.height)
-            ) {
-                ball.speedX = -ball.speedX;
-            }
-
-            // Score points
-            if (ball.x < 0) {
-                paddle2.score++;
-                resetBall();
-            } else if (ball.x > canvas.width) {
-                paddle1.score++;
-                resetBall();
-            }
-        }
-
-        // Reset ball
-        function resetBall() {
-            ball.x = canvas.width / 2;
-            ball.y = canvas.height / 2;
-            ball.speedX = -ball.speedX;
-            ball.speedY = Math.random() * 10 - 5;
-        }
-
-        // Draw everything
-        function draw() {
-            // Clear canvas
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw paddles
-            ctx.fillStyle = 'white';
-            ctx.fillRect(paddle1.x, paddle1.y, paddle1.width, paddle1.height);
-            ctx.fillRect(paddle2.x, paddle2.y, paddle2.width, paddle2.height);
-
-            // Draw ball
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            ctx.fillStyle = 'white';
-            ctx.fill();
-            ctx.closePath();
-
-            // Draw scores
-            ctx.font = '32px Arial';
-            ctx.fillText(paddle1.score, canvas.width / 4, 50);
-            ctx.fillText(paddle2.score, 3 * canvas.width / 4, 50);
-
-            // Draw center line
-            ctx.setLineDash([5, 15]);
-            ctx.beginPath();
-            ctx.moveTo(canvas.width / 2, 0);
-            ctx.lineTo(canvas.width / 2, canvas.height);
-            ctx.strokeStyle = 'white';
-            ctx.stroke();
-        }
-
-        // Game loop
-        function gameLoop() {
-            movePaddles();
-            moveBall();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // Start game
-        gameLoop();
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
