@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta Aleatoria</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .question { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #3367d6; }
+    </style>
+</head>
+<body>
+    <h1>Encuesta Aleatoria</h1>
+    <form id="surveyForm">
+        <div id="questionsContainer"></div>
+        <button type="submit">Enviar respuestas</button>
+    </form>
+
+    <script>
+        // Banco de preguntas
+        const questionBank = [
+            {
+                question: "¿Con qué frecuencia usas nuestro producto/servicio?",
+                type: "radio",
+                options: ["Diariamente", "Semanalmente", "Mensualmente", "Raramente"]
+            },
+            {
+                question: "¿Cómo calificarías tu experiencia general? (1-5)",
+                type: "scale",
+                min: 1,
+                max: 5
+            },
+            {
+                question: "¿Qué características valoras más? (Selecciona hasta 3)",
+                type: "checkbox",
+                options: ["Precio", "Calidad", "Diseño", "Servicio al cliente", "Innovación", "Facilidad de uso"]
+            },
+            {
+                question: "¿Qué tan probable es que recomiendes nuestro producto a otros?",
+                type: "radio",
+                options: ["Muy probable", "Probable", "Neutral", "Poco probable", "Nada probable"]
+            },
+            {
+                question: "¿Qué mejora te gustaría ver en nuestro producto/servicio?",
+                type: "text"
+            }
+        ];
+
+        // Seleccionar preguntas aleatorias
+        function getRandomQuestions(numQuestions) {
+            const shuffled = [...questionBank].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, numQuestions);
+        }
+
+        // Mostrar preguntas
+        function displayQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            
+            const selectedQuestions = getRandomQuestions(3); // Mostrar 3 preguntas aleatorias
+            
+            selectedQuestions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                
+                const questionLabel = document.createElement('label');
+                questionLabel.textContent = q.question;
+                questionDiv.appendChild(questionLabel);
+                
+                // Campo de respuesta según el tipo
+                if (q.type === 'radio') {
+                    q.options.forEach(option => {
+                        const div = document.createElement('div');
+                        const input = document.createElement('input');
+                        input.type = 'radio';
+                        input.name = `question_${index}`;
+                        input.value = option;
+                        input.required = true;
+                        
+                        const label = document.createElement('label');
+                        label.textContent = option;
+                        
+                        div.appendChild(input);
+                        div.appendChild(label);
+                        questionDiv.appendChild(div);
+                    });
+                } else if (q.type === 'checkbox') {
+                    q.options.forEach(option => {
+                        const div = document.createElement('div');
+                        const input = document.createElement('input');
+                        input.type = 'checkbox';
+                        input.name = `question_${index}[]`;
+                        input.value = option;
+                        
+                        const label = document.createElement('label');
+                        label.textContent = option;
+                        
+                        div.appendChild(input);
+                        div.appendChild(label);
+                        questionDiv.appendChild(div);
+                    });
+                } else if (q.type === 'scale') {
+                    const select = document.createElement('select');
+                    select.name = `question_${index}`;
+                    select.required = true;
+                    
+                    for (let i = q.min; i <= q.max; i++) {
+                        const option = document.createElement('option');
+                        option.value = i;
+                        option.textContent = i;
+                        select.appendChild(option);
+                    }
+                    
+                    questionDiv.appendChild(select);
+                } else if (q.type === 'text') {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.name = `question_${index}`;
+                    input.required = true;
+                    questionDiv.appendChild(input);
+                }
+                
+                container.appendChild(questionDiv);
+            });
+        }
+
+        // Enviar datos a Google Sheets
+        async function submitToGoogleSheets(data) {
+            // URL de tu web app de Google Apps Script
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbw1FOtElx_B9CqaR4N4JD7PRV6kRnwkAMPCqMsFfUyG_CuJ14JPCr4vhbiGTQt6m1_V6A/exec';
+            
+            try {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                alert('¡Gracias por completar la encuesta!');
+                displayQuestions(); // Mostrar nuevas preguntas aleatorias
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Hubo un error al enviar las respuestas. Por favor intenta nuevamente.');
+            }
+        }
+
+        // Manejar envío del formulario
+        document.getElementById('surveyForm').addEventListener('submit', function(e) {https://script.google.com/macros/s/AKfycbw1FOtElx_B9CqaR4N4JD7PRV6kRnwkAMPCqMsFfUyG_CuJ14JPCr4vhbiGTQt6m1_V6A/exec
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const responses = {};
+            
+            // Recopilar respuestas
+            formData.forEach((value, key) => {
+                if (key.endsWith('[]')) {
+                    // Para checkboxes (múltiples valores)
+                    const baseKey = key.replace('[]', '');
+                    if (!responses[baseKey]) {
+                        responses[baseKey] = [];
+                    }
+                    responses[baseKey].push(value);
+                } else {
+                    responses[key] = value;
+                }
+            });
+            
+            // Enviar a Google Sheets
+            submitToGoogleSheets({
+                timestamp: new Date().toISOString(),
+                ...responses
+            });
+        });
+
+        // Mostrar preguntas al cargar la página
+        window.onload = displayQuestions;
+    </script>
+</body>
+</html>
