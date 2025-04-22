@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         // Enviar a Google Sheets via Apps Script
-        const scriptUrl = 'TU_URL_DE_APPS_SCRIPT'; // Reemplazar con tu URL
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbym9EZ0xDS8OatVpllb-M824k4v4V4z6Yg6z-Gyjh6ezUh3SsLPIkB6Ax6jOZSEoO162Q/exec'; // Reemplazar con tu URL
         
         axios.post(scriptUrl, dataToSend)
             .then(response => {
