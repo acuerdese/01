@@ -1,184 +1,167 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuesta Aleatoria</title>
+    <title>Pong Game</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .question { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-        button { padding: 10px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #3367d6; }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+        }
+        canvas {
+            border: 2px solid #fff;
+        }
     </style>
 </head>
 <body>
-    <h1>Encuesta Aleatoria</h1>
-    <form id="surveyForm">
-        <div id="questionsContainer"></div>
-        <button type="submit">Enviar respuestas</button>
-    </form>
-
+    <canvas id="pongCanvas" width="800" height="400"></canvas>
     <script>
-        // Banco de preguntas
-        const questionBank = [
-            {
-                question: "¿Con qué frecuencia usas nuestro producto/servicio?",
-                type: "radio",
-                options: ["Diariamente", "Semanalmente", "Mensualmente", "Raramente"]
-            },
-            {
-                question: "¿Cómo calificarías tu experiencia general? (1-5)",
-                type: "scale",
-                min: 1,
-                max: 5
-            },
-            {
-                question: "¿Qué características valoras más? (Selecciona hasta 3)",
-                type: "checkbox",
-                options: ["Precio", "Calidad", "Diseño", "Servicio al cliente", "Innovación", "Facilidad de uso"]
-            },
-            {
-                question: "¿Qué tan probable es que recomiendes nuestro producto a otros?",
-                type: "radio",
-                options: ["Muy probable", "Probable", "Neutral", "Poco probable", "Nada probable"]
-            },
-            {
-                question: "¿Qué mejora te gustaría ver en nuestro producto/servicio?",
-                type: "text"
-            }
-        ];
+        const canvas = document.getElementById('pongCanvas');
+        const ctx = canvas.getContext('2d');
 
-        // Seleccionar preguntas aleatorias
-        function getRandomQuestions(numQuestions) {
-            const shuffled = [...questionBank].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, numQuestions);
-        }
+        // Game objects
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            speedX: 7,
+            speedY: 7
+        };
 
-        // Mostrar preguntas
-        function displayQuestions() {
-            const container = document.getElementById('questionsContainer');
-            container.innerHTML = '';
-            
-            const selectedQuestions = getRandomQuestions(3); // Mostrar 3 preguntas aleatorias
-            
-            selectedQuestions.forEach((q, index) => {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'question';
-                
-                const questionLabel = document.createElement('label');
-                questionLabel.textContent = q.question;
-                questionDiv.appendChild(questionLabel);
-                
-                // Campo de respuesta según el tipo
-                if (q.type === 'radio') {
-                    q.options.forEach(option => {
-                        const div = document.createElement('div');
-                        const input = document.createElement('input');
-                        input.type = 'radio';
-                        input.name = `question_${index}`;
-                        input.value = option;
-                        input.required = true;
-                        
-                        const label = document.createElement('label');
-                        label.textContent = option;
-                        
-                        div.appendChild(input);
-                        div.appendChild(label);
-                        questionDiv.appendChild(div);
-                    });
-                } else if (q.type === 'checkbox') {
-                    q.options.forEach(option => {
-                        const div = document.createElement('div');
-                        const input = document.createElement('input');
-                        input.type = 'checkbox';
-                        input.name = `question_${index}[]`;
-                        input.value = option;
-                        
-                        const label = document.createElement('label');
-                        label.textContent = option;
-                        
-                        div.appendChild(input);
-                        div.appendChild(label);
-                        questionDiv.appendChild(div);
-                    });
-                } else if (q.type === 'scale') {
-                    const select = document.createElement('select');
-                    select.name = `question_${index}`;
-                    select.required = true;
-                    
-                    for (let i = q.min; i <= q.max; i++) {
-                        const option = document.createElement('option');
-                        option.value = i;
-                        option.textContent = i;
-                        select.appendChild(option);
-                    }
-                    
-                    questionDiv.appendChild(select);
-                } else if (q.type === 'text') {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.name = `question_${index}`;
-                    input.required = true;
-                    questionDiv.appendChild(input);
-                }
-                
-                container.appendChild(questionDiv);
-            });
-        }
+        const paddle1 = {
+            x: 10,
+            y: canvas.height / 2 - 50,
+            width: 10,
+            height: 100,
+            speed: 8,
+            score: 0
+        };
 
-        // Enviar datos a Google Sheets
-        async function submitToGoogleSheets(data) {
-            // URL de tu web app de Google Apps Script
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbw1FOtElx_B9CqaR4N4JD7PRV6kRnwkAMPCqMsFfUyG_CuJ14JPCr4vhbiGTQt6m1_V6A/exec';
-            
-            try {
-                const response = await fetch(scriptUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                alert('¡Gracias por completar la encuesta!');
-                displayQuestions(); // Mostrar nuevas preguntas aleatorias
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Hubo un error al enviar las respuestas. Por favor intenta nuevamente.');
-            }
-        }
+        const paddle2 = {
+            x: canvas.width - 20,
+            y: canvas.height / 2 - 50,
+            width: 10,
+            height: 100,
+            speed: 8,
+            score: 0
+        };
 
-        // Manejar envío del formulario
-        document.getElementById('surveyForm').addEventListener('submit', function(e) {https://script.google.com/macros/s/AKfycbw1FOtElx_B9CqaR4N4JD7PRV6kRnwkAMPCqMsFfUyG_CuJ14JPCr4vhbiGTQt6m1_V6A/exec
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const responses = {};
-            
-            // Recopilar respuestas
-            formData.forEach((value, key) => {
-                if (key.endsWith('[]')) {
-                    // Para checkboxes (múltiples valores)
-                    const baseKey = key.replace('[]', '');
-                    if (!responses[baseKey]) {
-                        responses[baseKey] = [];
-                    }
-                    responses[baseKey].push(value);
-                } else {
-                    responses[key] = value;
-                }
-            });
-            
-            // Enviar a Google Sheets
-            submitToGoogleSheets({
-                timestamp: new Date().toISOString(),
-                ...responses
-            });
+        // Key states
+        const keys = {
+            w: false,
+            s: false,
+            ArrowUp: false,
+            ArrowDown: false
+        };
+
+        // Event listeners for paddle movement
+        document.addEventListener('keydown', (e) => {
+            if (e.key in keys) keys[e.key] = true;
         });
 
-        // Mostrar preguntas al cargar la página
-        window.onload = displayQuestions;
+        document.addEventListener('keyup', (e) => {
+            if (e.key in keys) keys[e.key] = false;
+        });
+
+        // Move paddles
+        function movePaddles() {
+            if (keys.w && paddle1.y > 0) paddle1.y -= paddle1.speed;
+            if (keys.s && paddle1.y < canvas.height - paddle1.height) paddle1.y += paddle1.speed;
+            // Uncomment for two-player mode
+            // if (keys.ArrowUp && paddle2.y > 0) paddle2.y -= paddle2.speed;
+            // if (keys.ArrowDown && paddle2.y < canvas.height - paddle2.height) paddle2.y += paddle2.speed;
+
+            // AI for paddle2 (comment out for two-player mode)
+            const paddle2Center = paddle2.y + paddle2.height / 2;
+            if (paddle2Center < ball.y - 35) paddle2.y += paddle2.speed;
+            if (paddle2Center > ball.y + 35) paddle2.y -= paddle2.speed;
+        }
+
+        // Move ball
+        function moveBall() {
+            ball.x += ball.speedX;
+            ball.y += ball.speedY;
+
+            // Top and bottom wall collision
+            if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+                ball.speedY = -ball.speedY;
+            }
+
+            // Paddle collision
+            if (
+                (ball.x - ball.radius < paddle1.x + paddle1.width &&
+                 ball.y > paddle1.y && ball.y < paddle1.y + paddle1.height) ||
+                (ball.x + ball.radius > paddle2.x &&
+                 ball.y > paddle2.y && ball.y < paddle2.y + paddle2.height)
+            ) {
+                ball.speedX = -ball.speedX;
+            }
+
+            // Score points
+            if (ball.x < 0) {
+                paddle2.score++;
+                resetBall();
+            } else if (ball.x > canvas.width) {
+                paddle1.score++;
+                resetBall();
+            }
+        }
+
+        // Reset ball
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.speedX = -ball.speedX;
+            ball.speedY = Math.random() * 10 - 5;
+        }
+
+        // Draw everything
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw paddles
+            ctx.fillStyle = 'white';
+            ctx.fillRect(paddle1.x, paddle1.y, paddle1.width, paddle1.height);
+            ctx.fillRect(paddle2.x, paddle2.y, paddle2.width, paddle2.height);
+
+            // Draw ball
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.closePath();
+
+            // Draw scores
+            ctx.font = '32px Arial';
+            ctx.fillText(paddle1.score, canvas.width / 4, 50);
+            ctx.fillText(paddle2.score, 3 * canvas.width / 4, 50);
+
+            // Draw center line
+            ctx.setLineDash([5, 15]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.strokeStyle = 'white';
+            ctx.stroke();
+        }
+
+        // Game loop
+        function gameLoop() {
+            movePaddles();
+            moveBall();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start game
+        gameLoop();
     </script>
 </body>
 </html>
