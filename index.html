@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+    .question-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      display: none;
+      animation: fadeIn 0.5s;
+    }
+    .question-card.active {
+      display: block;
+    }
+    h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+    .option-btn {
+      display: block;
+      width: 80%;
+      margin: 10px auto;
+      padding: 15px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .option-btn:hover {
+      background: #2980b9;
+    }
+    .progress {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #7f8c8d;
+    }
+    .nav-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .thank-you {
+      display: none;
+      font-size: 20px;
+      color: #27ae60;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    /* Swipe gesture support */
+    .swipeable {
+      touch-action: pan-y;
+    }
+  </style>
+</head>
+<body>
+  <div class="container swipeable">
+    <div class="question-card" id="q1">
+      <h2>What’s your go-to weekend vibe?</h2>
+      <button class="option-btn" onclick="selectAnswer(1, 'Netflix and chill')">Netflix and chill</button>
+      <button class="option-btn" onclick="selectAnswer(1, 'Outdoor adventure')">Outdoor adventure</button>
+      <button class="option-btn" onclick="selectAnswer(1, 'Party with friends')">Party with friends</button>
+      <button class="option-btn" onclick="selectAnswer(1, 'Quiet reading time')">Quiet reading time</button>
+    </div>
+    <div class="question-card" id="q2">
+      <h2>Which superpower would you pick?</h2>
+      <button class="option-btn" onclick="selectAnswer(2, 'Fly like a bird')">Fly like a bird</button>
+      <button class="option-btn" onclick="selectAnswer(2, 'Become invisible')">Become invisible</button>
+      <button class="option-btn" onclick="selectAnswer(2, 'Read minds')">Read minds</button>
+      <button class="option-btn" onclick="selectAnswer(2, 'Super strength')">Super strength</button>
+    </div>
+    <div class="question-card" id="q3">
+      <h2>What’s the best pizza topping?</h2>
+      <button class="option-btn" onclick="selectAnswer(3, 'Pepperoni')">Pepperoni</button>
+      <button class="option-btn" onclick="selectAnswer(3, 'Mushrooms')">Mushrooms</button>
+      <button class="option-btn" onclick="selectAnswer(3, 'Pineapple')">Pineapple</button>
+      <button class="option-btn" onclick="selectAnswer(3, 'Extra cheese')">Extra cheese</button>
+    </div>
+    <div class="question-card" id="q4">
+      <h2>How do you start your morning?</h2>
+      <button class="option-btn" onclick="selectAnswer(4, 'Coffee, stat!')">Coffee, stat!</button>
+      <button class="option-btn" onclick="selectAnswer(4, 'Morning workout')">Morning workout</button>
+      <button class="option-btn" onclick="selectAnswer(4, 'Scroll social media')">Scroll social media</button>
+      <button class="option-btn" onclick="selectAnswer(4, 'Hit snooze')">Hit snooze</button>
+    </div>
+    <div class="question-card" id="q5">
+      <h2>Which animal is your spirit buddy?</h2>
+      <button class="option-btn" onclick="selectAnswer(5, 'Playful dolphin')">Playful dolphin</button>
+      <button class="option-btn" onclick="selectAnswer(5, 'Wise owl')">Wise owl</button>
+      <button class="option-btn" onclick="selectAnswer(5, 'Loyal dog')">Loyal dog</button>
+      <button class="option-btn" onclick="selectAnswer(5, 'Chill sloth')">Chill sloth</button>
+    </div>
+    <div class="thank-you" id="thank-you">
+      <h2>Thanks for voting!</h2>
+      <p>Your responses have been recorded.</p>
+    </div>
+    <div class="progress" id="progress">Question 1/5</div>
+    <div>
+      <button class="nav-btn" onclick="prevQuestion()" style="display:none;" id="prevBtn">Previous</button>
+      <button class="nav-btn" onclick="nextQuestion()" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    let currentQuestion = 1;
+    let totalQuestions = 5;
+    let responses = {};
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    // Show initial question
+    document.getElementById('q1').classList.add('active');
+
+    function selectAnswer(questionNum, answer) {
+      responses['q' + questionNum] = answer;
+      document.getElementById('nextBtn').style.display = 'inline';
+    }
+
+    function nextQuestion() {
+      if (currentQuestion < totalQuestions) {
+        document.getElementById('q' + currentQuestion).classList.remove('active');
+        currentQuestion++;
+        document.getElementById('q' + currentQuestion).classList.add('active');
+        document.getElementById('progress').innerText = `Question ${currentQuestion}/${totalQuestions}`;
+        document.getElementById('prevBtn').style.display = 'inline';
+        if (currentQuestion === totalQuestions) {
+          document.getElementById('nextBtn').innerText = 'Submit';
+        }
+      } else {
+        // Submit responses
+        document.getElementById('q' + currentQuestion).classList.remove('active');
+        document.getElementById('thank-you').style.display = 'block';
+        document.getElementById('progress').style.display = 'none';
+        document.getElementById('prevBtn').style.display = 'none';
+        document.getElementById('nextBtn').style.display = 'none';
+        google.script.run.withSuccessHandler(function(result) {
+          console.log(result);
+        }).saveResponses(responses);
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestion > 1) {
+        document.getElementById('q' + currentQuestion).classList.remove('active');
+        currentQuestion--;
+        document.getElementById('q' + currentQuestion).classList.add('active');
+        document.getElementById('progress').innerText = `Question ${currentQuestion}/${totalQuestions}`;
+        document.getElementById('nextBtn').innerText = 'Next';
+        if (currentQuestion === 1) {
+          document.getElementById('prevBtn').style.display = 'none';
+        }
+      }
+    }
+
+    // Swipe detection
+    document.querySelector('.swipeable').addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+
+    document.querySelector('.swipeable').addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 50) {
+        nextQuestion();
+      } else if (touchEndX - touchStartX > 50) {
+        prevQuestion();
+      }
+    });
+  </script>
+</body>
+</html>
